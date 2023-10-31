@@ -1,0 +1,2 @@
+term.clear()
+local user = getUser()

@@ -1,0 +1,32 @@
+-- changes the file permissions of a file or directory
+-- Usage: chmod <file> <permissions>
+-- Example: chmod /etc/passwd 777
+
+local tArgs = { ... }
+if #tArgs ~= 2 then
+    print("Usage: chmod <file> <permissions>")
+    return
+end
+local args = require("/boot.apis.options")(tArgs)
+
+local file = args.args[1]
+local permissions = args.args[2]
+
+if not fs.exists(file) then
+    printError("File does not exist")
+    return
+end
+
+if not fs.isDir(file) then
+    if not fs.setPermissions(file, permissions) then
+        printError("Failed to set permissions")
+        return
+    end
+else
+    if not fs.setPermissions(file, permissions, true) then
+        printError("Failed to set permissions")
+        return
+    end
+end
+
+print("Permissions set to " .. permissions)

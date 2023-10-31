@@ -1,0 +1,3 @@
+local x = os.getUser()
+local username = os.passwd.get.byID(i)
+print(username)

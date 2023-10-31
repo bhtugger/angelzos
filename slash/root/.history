@@ -1,0 +1,23 @@
+{}ls
+cd ../
+ls
+cd ../
+whoami
+list
+list /root
+shell.setAlias("ls", "list")
+lua
+ls
+cd /rom
+ls
+list
+start
+startup
+ls
+reboot
+ls
+cd ../
+cd
+cd 
+cd /
+cd

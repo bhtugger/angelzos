@@ -1,0 +1,80 @@
+local tArgs = { ... }
+local notOptions = nil
+
+local args = require("/boot.apis.options")(table.unpack(tArgs))
+-- Get all the files in the directory
+local sDir = shell.dir()
+if notOptions ~= nil then
+    sDir = shell.resolve(notOptions)
+end
+
+if not fs.isDir(sDir) then
+    printError("Not a directory")
+    return
+end
+
+-- Sort into dirs/files, and calculate column count
+local tAll = fs.list(sDir)
+local tFiles = {}
+local tDirs = {}
+
+local bShowHidden = false
+if args.flags["a"] then
+    bShowHidden = true
+end
+
+for _, sItem in pairs(tAll) do
+    if bShowHidden or string.sub(sItem, 1, 1) ~= "." then
+        local sPath = fs.combine(sDir, sItem)
+        if fs.isDir(sPath) then
+            table.insert(tDirs, sItem)
+        else
+            table.insert(tFiles, sItem)
+        end
+    end
+end
+table.sort(tDirs)
+table.sort(tFiles)
+
+if term.isColour() then
+    local dir = fs.combine(sDir).."/"
+    if(args.flags["r"]) then
+        --reverse order
+        table.sort(tDirs, function(a, b) return a > b end)
+    end
+    if(args.flags["l"]) then
+        print("Permissions  Owner   Group    Size   Name")
+        for i, v in ipairs(tDirs) do
+            local x,y = term.getCursorPos()
+            term.setTextColor(colors.green)
+            term.write(fs.getPermissions(dir..v).torwx())
+            term.setCursorPos(14,y)
+            term.write(fs.getPermissions(dir..v).ownerName)
+            term.setCursorPos(22,y)
+            term.write(fs.getPermissions(dir..v).groupName)     
+            term.setCursorPos(31,y)
+--            term.write(fs.getSize(dir..v))
+            term.setCursorPos(38,y)      
+            term.write(v)
+            print()
+        end
+        for i, v in ipairs(tFiles) do
+            local x,y = term.getCursorPos()
+            term.setTextColor(colors.white)
+            term.write(fs.getPermissions(dir..v).torwx())
+            term.setCursorPos(14,y)
+            term.write(fs.getPermissions(dir..v).ownerName)
+            term.setCursorPos(22,y)
+            term.write(fs.getPermissions(dir..v).groupName)
+            term.setCursorPos(31,y)
+            term.write(fs.getSize(dir..v))
+            term.setCursorPos(38,y)      
+            term.write(v)
+            print()
+        end
+    else
+        textutils.pagedTabulate(colors.green, tDirs, colors.white, tFiles)
+    end
+else
+    textutils.pagedTabulate(colors.lightGray, tDirs, colors.white, tFiles)
+end

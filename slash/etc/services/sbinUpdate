@@ -1,0 +1,7 @@
+
+local paths = fs.list('/sbin')
+for k, v in pairs(paths) do
+    local value = paths[k]
+    local filename = fs.getName(paths[k])
+    shell.setAlias(filename,"/sbin/"..value)
+end

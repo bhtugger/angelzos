@@ -1,0 +1,7 @@
+{
+    ["program"] = "fsChecker",
+    ["description"] = "checks each file to ensure the fs is correct",
+    ["autostart"] = true,
+    ["autorestart"] = true,
+    ["disabled"] = false,
+}

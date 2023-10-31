@@ -1,0 +1,102 @@
+
+
+local multishell = multishell
+
+if multishell then
+    multishell.setTitle(multishell.getCurrent(), "shell")
+end
+local home = os.passwd.get.byID(os.getUser()).home
+local exit = false
+
+-- shell.exit
+function shell.exit()
+    exit = true
+end
+
+-- Colours
+local promptColour, textColour, bgColour
+if term.isColour() then
+    promptColour = colours.white
+    textColour = colours.white
+    bgColour = colours.black
+else
+    promptColour = colours.white
+    textColour = colours.white
+    bgColour = colours.black
+end
+
+local tArgs = { ... }
+if #tArgs > 0 then
+    shell.run(...)
+else
+    -- Print the header
+    term.setBackgroundColor(bgColour)
+    term.setTextColour(promptColour)
+    term.setTextColour(textColour)
+
+    if settings.get("motd.enable") then
+        shell.run("motd")
+    end
+
+    -- Read commands and execute them
+    local tCommandHistory = {} 
+    local tCo = fs.open(home.."/.history", "r")
+    if fs.exists(home.."/.history") and tCo then
+        local tCom = textutils.unserialise(tCo.readAll())
+        if tCom then
+            tCommandHistory = tCom
+        end
+        tCo.close()
+    end
+    local ok, err = pcall(shell.setDir,home)
+    if not ok then
+        local color = term.getTextColor()
+        term.setTextColor(colors.red)
+        print(err)
+        term.setTextColor(color)
+        shell.setDir("/")
+    end
+
+    while not exit do
+        home = os.passwd.get.byID(os.getUser()).home
+        if term.setGraphicsMode then term.setGraphicsMode(0) end
+        term.setBackgroundColor(bgColour)
+        term.setTextColour(promptColour)
+        local dir = shell.dir()
+        if fs.combine(dir):match("^"..fs.combine(home)) then
+            local extDir = fs.combine(dir):sub(#fs.combine(home)+2)
+            if extDir == "" then
+                dir = "~"
+            else
+                dir = "~/"..extDir
+            end
+        else
+            dir = "/"..dir
+        end
+        local pref = "$"
+        if os.getUser() == 0 then
+            pref = "#"
+        end
+        write(os.passwd.get.byID(os.getUser()).name.."@"..os.getHostname()..":"..dir..pref.." ")
+        term.setTextColour(textColour)
+        local sLine
+        if settings.get("shell.autocomplete") then
+            sLine = read(nil, tCommandHistory, shell.complete)
+        else
+            sLine = read(nil, tCommandHistory)
+        end
+        if sLine:match("%S") and tCommandHistory[#tCommandHistory] ~= sLine then
+            if not sLine:match("^%s") then
+                table.insert(tCommandHistory, sLine)
+            end
+            if fs.exists(home.."/.history") then
+                local d = fs.open(home.."/.history", "w")
+                if d then
+                    d.write(textutils.serialise(tCommandHistory))
+                    d.close()
+                end
+            end
+        end
+        shell.run(sLine)
+    end
+end

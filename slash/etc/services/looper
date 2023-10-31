@@ -1,0 +1,13 @@
+{
+    ["program"] = "looper",
+    ["args"] = {
+        "test",
+        "hello",
+    },
+    ["description"] = "test",
+    ["autostart"] = true,
+    ["autorestart"] = true,
+    ["startsecs"] = 1,
+    ["startretries"] = 3,
+    ["disabled"] = false,
+}
